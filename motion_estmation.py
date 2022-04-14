@@ -6,6 +6,15 @@ import matplotlib.pyplot as plt
 from block_matching import BlockMatching
 from tqdm import tqdm
 
+def write(frames_out, frame_width, frame_height, path="out.avi", fps=30):            
+        # fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        fourcc = -1
+        writer = cv.VideoWriter(path,fourcc,fps,(frame_width,frame_height),True)
+        for frame in frames_out:
+            frame = cv.cvtColor(frame,cv.COLOR_GRAY2RGB)
+            writer.write(frame)
+        print("[INFO] Video Export Completed")
+
 def read_video(filename):
     """returns video object with its properties"""
     video_name = filename.split('/')[-1].split('.')[0]
@@ -76,7 +85,7 @@ def ME(path) :
     #     PSNR.append(10*math.log10(255**2 / MSE))
 
     prev_prediction = None
-    for f in tqdm(range(videoframecount-1)):
+    for f in tqdm(range(videoframecount-1)):#videoframecount-1
         if predict_from_prev:
             anchor = frames_inp[f] if f%N == 0 else prev_prediction
         else:
@@ -110,12 +119,16 @@ def ME(path) :
 
     plt.show()
 
-    cv.imshow("Demo",out)
-    cv.waitKey(0)
-    cv.imwrite("demo.png",out)
+    # cv.imshow("Demo",out)
+    # cv.waitKey(0)
+    # cv.imwrite("demo.png",out)
+    predict = "prev" if predict_from_prev else "orig"
+    path_out = "input/{}-Size{}-{}-{}-{}.mp4".format(dfd,blockSize[0],method,searchRange,predict)
+    write(frames_out, frame_width, frame_height, path_out, fps=30)
+    print(path_out)
 
 if __name__ == '__main__':
-    path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\football_422_cif.y4m'
+    path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\tennis_sif.y4m'
     # Block Matching Parameters
     # ============================================================================================
     dfd = 1 ; blockSize = (16,16) ; searchMethod = 0 ; searchRange = 7 ; predict_from_prev = False ; N = 5 
