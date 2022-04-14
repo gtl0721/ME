@@ -4,7 +4,7 @@ import cv2 as cv
 import numpy  as np
 import matplotlib.pyplot as plt
 from block_matching import BlockMatching
-
+from tqdm import tqdm
 
 def read_video(filename):
     """returns video object with its properties"""
@@ -63,19 +63,41 @@ def visualize(frame_width,frame_height,anchor,target,motionField,anchorP,text,a,
 def ME(path) :
     MSE = None
     NUM = None
+    frames_out = []
     PSNR = []
     BLOCK_NUM = []
     video_name, video, frame_width, frame_height, videofps, videoframecount ,frames_inp= read_video(path)
 
-    for i in range(videoframecount-1): #videoframecount-1
-        anchor = frames_inp[i]
-        target = frames_inp[i+1]
+    # for i in range(videoframecount-1): #videoframecount-1
+    #     anchor = frames_inp[i]
+    #     target = frames_inp[i+1]
+    #     MSE, NUM = bm.step(anchor,target)
+    #     BLOCK_NUM.append(NUM)
+    #     PSNR.append(10*math.log10(255**2 / MSE))
+
+    prev_prediction = None
+    for f in tqdm(range(videoframecount-1)):
+        if predict_from_prev:
+            anchor = frames_inp[f] if f%N == 0 else prev_prediction
+        else:
+            anchor = frames_inp[f]
+        target = frames_inp[f+1]
         MSE, NUM = bm.step(anchor,target)
         BLOCK_NUM.append(NUM)
         PSNR.append(10*math.log10(255**2 / MSE))
 
+        anchorP = bm.anchorP
+        motionField = bm.motionField
+
+        out = visualize(frame_width, frame_height, anchor,target,motionField,anchorP,text,f,f+1)
+        frames_out.append(out)
+        if predict_from_prev:
+            prev_prediction = anchorP
+
+
     #plot
     frame_num = np.arange(0, videoframecount-1, 1)
+    print(PSNR)
     plt.subplot(2, 1, 1)
     plt.xlabel('flames')
     plt.ylabel('PSNR')
@@ -88,17 +110,6 @@ def ME(path) :
 
     plt.show()
 
-    # anchorP = bm.anchorP
-    # motionField = bm.motionField
-
-    # out = visualize(frame_width,frame_height,anchor,target,motionField,anchorP,text,0,1)
-
-    # cv.imshow("Demo",out)
-    # cv.waitKey(0)
-    # cv.imwrite("demo.png",out)
-
-    # video.release()
-    # cv.destroyAllWindows()
 
 if __name__ == '__main__':
     path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\football_422_cif.y4m'
