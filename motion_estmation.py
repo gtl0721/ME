@@ -110,6 +110,9 @@ def ME(path) :
 
     plt.show()
 
+    cv.imshow("Demo",out)
+    cv.waitKey(0)
+    cv.imwrite("demo.png",out)
 
 if __name__ == '__main__':
     path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\football_422_cif.y4m'
