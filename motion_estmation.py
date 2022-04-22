@@ -7,11 +7,11 @@ from block_matching import BlockMatching
 from tqdm import tqdm
 
 def write(frames_out, frame_width, frame_height, path="out.avi", fps=30):            
-        # fourcc = cv2.VideoWriter_fourcc(*"MJPG")
+        #fourcc = cv.VideoWriter_fourcc(*"MJPG")
         fourcc = -1
         writer = cv.VideoWriter(path,fourcc,fps,(frame_width,frame_height),True)
         for frame in frames_out:
-            frame = cv.cvtColor(frame,cv.COLOR_GRAY2RGB)
+            #frame = cv.cvtColor(frame,cv.COLOR_GRAY2RGB)
             writer.write(frame)
         print("[INFO] Video Export Completed")
 
@@ -98,15 +98,18 @@ def ME(path) :
         anchorP = bm.anchorP
         motionField = bm.motionField
 
-        out = visualize(frame_width, frame_height, anchor,target,motionField,anchorP,text,f,f+1)
+        out = visualize(frame_width,frame_height,anchor,target,motionField,anchorP,text,f,f+1)
         frames_out.append(out)
         if predict_from_prev:
             prev_prediction = anchorP
 
+        cv.imshow("Demo",out)
+        cv.waitKey(1)
 
+    
     #plot
     frame_num = np.arange(0, videoframecount-1, 1)
-    print(PSNR)
+    # print(PSNR)
     plt.subplot(2, 1, 1)
     plt.xlabel('flames')
     plt.ylabel('PSNR')
@@ -119,19 +122,16 @@ def ME(path) :
 
     plt.show()
 
-    # cv.imshow("Demo",out)
-    # cv.waitKey(0)
-    # cv.imwrite("demo.png",out)
-    predict = "prev" if predict_from_prev else "orig"
-    path_out = "input/{}-Size{}-{}-{}-{}.mp4".format(dfd,blockSize[0],method,searchRange,predict)
-    write(frames_out, frame_width, frame_height, path_out, fps=30)
-    print(path_out)
+    # predict = "prev" if predict_from_prev else "orig"
+    # path_out = "Motion_Estimation/output/{}-Size{}-{}-{}-{}.mp4".format(dfd,blockSize[0],method,searchRange,predict)
+    # write(frames_out,frame_width,frame_height,path_out,fps=30)
+    # print(path_out)
 
 if __name__ == '__main__':
-    path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\tennis_sif.y4m'
+    path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\football_422_cif.y4m'
     # Block Matching Parameters
     # ============================================================================================
-    dfd = 1 ; blockSize = (16,16) ; searchMethod = 0 ; searchRange = 7 ; predict_from_prev = False ; N = 5 
+    dfd = 1 ; blockSize = (16,16) ; searchMethod = 1 ; searchRange = 7 ; predict_from_prev = False ; N = 5 
 
     bm = BlockMatching(
         dfd=dfd,
