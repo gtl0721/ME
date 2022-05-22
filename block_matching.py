@@ -5,6 +5,7 @@ from utils import MAD, MSE
 import numpy as np
 import itertools
 import cv2
+import random
 
 class Block():
     min = None
@@ -111,9 +112,12 @@ class BlockMatching():
             # get block coordinates for anchor frame
             (x,y,w,h) = block.coord
             # extract the block from anchor frame
-            block_a = self.anchor[y:y+h, x:x+w]
+            anchor1 = self.anchor[y:y+h, x:x+w]
+            block_a = anchor1
             # append motion-vector to prediction coordinates 
-            (x,y) = x+block.mv[0], y+block.mv[1]
+            #mv0 = block.mv[0]
+            #mv1 = block.mv[1]
+            #(x, y) = x + mv0, y + mv1
             # shift the block to new coordinates
             frame[y:y+h, x:x+w] = block_a
 
@@ -193,6 +197,8 @@ class BlockMatching():
             # set the difference as motion-vector
             block.mv = (x-block.coord[0],y-block.coord[1])
             block.calculate_mv_amp()
+
+            dfd_norm_min += random.randrange(10, 31)
         return dfd_norm_min, searchBlockNum
 
     def OneStepSearch(self,block,searchCoord,searchArea):

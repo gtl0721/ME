@@ -32,8 +32,8 @@ def read_video(filename):
         print("Could not open video")
         sys.exit()
 
-    for i in range(videoframecount):
-        print(f"Count {count} of {videoframecount}")
+    for i in tqdm(range(videoframecount)):
+        #print(f"Count {count} of {videoframecount}")
         ret, frame = video.read()
         if(ret):
             gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
@@ -85,7 +85,8 @@ def ME(path) :
     #     PSNR.append(10*math.log10(255**2 / MSE))
 
     prev_prediction = None
-    for f in tqdm(range(videoframecount-1)):#videoframecount-1
+    real_videoframecount = videoframecount-1
+    for f in tqdm(range(real_videoframecount)):#videoframecount-1
         if predict_from_prev:
             anchor = frames_inp[f] if f%N == 0 else prev_prediction
         else:
@@ -105,33 +106,29 @@ def ME(path) :
 
         cv.imshow("Demo",out)
         cv.waitKey(1)
+    FRAME_NUM = np.arange(0, real_videoframecount, 1)        
+    return BLOCK_NUM, PSNR, FRAME_NUM
 
-    
-    #plot
-    frame_num = np.arange(0, videoframecount-1, 1)
-    # print(PSNR)
+def result_polt(FRAME_NUM_F, PSNR_F, BLOCK_NUM_F, FRAME_NUM_T, PSNR_T, BLOCK_NUM_T):
     plt.subplot(2, 1, 1)
     plt.xlabel('flames')
     plt.ylabel('PSNR')
-    plt.plot(frame_num, PSNR, 'o--', label='PSNR', linewidth=1.0, color='blue')
+    plt.plot(FRAME_NUM_F, PSNR_F, 'o--', label='PSNR', linewidth=1.0, color='blue')
+    plt.plot(FRAME_NUM_T, PSNR_T, 'o--', label='PSNR', linewidth=1.0, color='red')
 
     plt.subplot(2, 1, 2)
     plt.xlabel('flames')
     plt.ylabel('blocks')
-    plt.plot(frame_num, BLOCK_NUM, 'o--', label='BLOCK_NUM', linewidth=1.0, color='g')
-
-    plt.show()
-
-    # predict = "prev" if predict_from_prev else "orig"
-    # path_out = "Motion_Estimation/output/{}-Size{}-{}-{}-{}.mp4".format(dfd,blockSize[0],method,searchRange,predict)
-    # write(frames_out,frame_width,frame_height,path_out,fps=30)
-    # print(path_out)
+    plt.plot(FRAME_NUM_F, BLOCK_NUM_F, 'o--', label='BLOCK_NUM', linewidth=1.0, color='blue')
+    plt.plot(FRAME_NUM_T, BLOCK_NUM_T, 'o--', label='BLOCK_NUM', linewidth=1.0, color='red')
 
 if __name__ == '__main__':
-    path = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\football_422_cif.y4m'
+    path1 = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\football_422_cif.y4m'
+    path2 = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\garden_sif.y4m'
+    path3 = 'C:\\Users\\a8000\\OneDrive\\桌面\\碩士\\5.視訊壓縮\\HW2\\input\\tennis_sif.y4m'
     # Block Matching Parameters
     # ============================================================================================
-    dfd = 1 ; blockSize = (16,16) ; searchMethod = 1 ; searchRange = 7 ; predict_from_prev = False ; N = 5 
+    dfd = 1 ; blockSize = (16,16) ; searchMethod = 0 ; searchRange = 7 ; predict_from_prev = False ; N = 5 
 
     bm = BlockMatching(
         dfd=dfd,
@@ -143,8 +140,26 @@ if __name__ == '__main__':
     # Title and Parameters Info    
     dfd = "MSE" if dfd else "MAD"
     method = "Exhaustive" if not searchMethod else "ThreeStep"
-    text = ["Block Matching Algorithm","DFD: {} | {} | {} Search Range: {}".format(
+    #full search
+    text = ["Motion Estimation Algorithm","DFD: {} | {} | {} Search Range: {}".format(
         dfd,blockSize,method,searchRange)]
     print(text)
+    BLOCK_NUM_F, PSNR_F, FRAME_NUM_F = ME(path1)
 
-    ME(path)
+    #three step search
+    searchMethod = 1
+    bm = BlockMatching(
+        dfd=dfd,
+        blockSize=blockSize,
+        searchMethod=searchMethod,
+        searchRange=searchRange,
+        motionIntensity=False)
+    method = "Exhaustive" if not searchMethod else "ThreeStep"        
+    text = ["Motion Estimation Algorithm","DFD: {} | {} | {} Search Range: {}".format(
+        dfd,blockSize,method,searchRange)]
+    print(text)        
+    BLOCK_NUM_T, PSNR_T, FRAME_NUM_T = ME(path1)
+    result_polt(FRAME_NUM_F, PSNR_F, BLOCK_NUM_F, FRAME_NUM_T, PSNR_T, BLOCK_NUM_T)
+
+    #diamond search
+    plt.show()
